@@ -17,9 +17,6 @@ export default function RegisterPage() {
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-//   const validatePassword = (password: string) =>
-//     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
-
   const handleRegister = async () => {
     setError("");
 
@@ -30,12 +27,6 @@ export default function RegisterPage() {
     if (!validateEmail(email)) {
       return setError("Invalid email format.");
     }
-
-    // if (!validatePassword(password)) {
-    //   return setError(
-    //     "Password must be at least 8 characters and include uppercase, lowercase, and a number."
-    //   );
-    // }
 
     if (password !== confirmPassword) {
       return setError("Passwords do not match.");
