@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -58,6 +60,23 @@ func main() {
 	seeder.Seed()
 
 	r := gin.Default()
+
+	frontendURL := os.Getenv("NEXT_PUBLIC_FRONTEND_URL")
+
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3000"
+		log.Println("Warning: NEXT_PUBLIC_FRONTEND_URL not set for CORS, defaulting to http://localhost:3000")
+	} else {
+		log.Printf("CORS allowed origin set to: %s", frontendURL)
+	}
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	userRepo := user_repository.NewUserRepository(config.DB)
 	userUC := user_usecase.NewUserUsecase(userRepo)
