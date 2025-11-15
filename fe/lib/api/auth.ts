@@ -7,7 +7,7 @@ export interface AuthResponse {
   };
 }
 
-const BASE_URL = "http://localhost:8080/users";
+const BASE_URL = "http://173.255.114.209:8080/users";
 
 export async function registerUser(data: {
   username: string;

@@ -2,7 +2,7 @@ import { authFetch } from "./fetcher";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Score, ScoreDetailPayload, ScoreDetailResponse } from "@/stores/useScoreStore";
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "http://173.255.114.209:8080";
 
 export async function startScore(quiz_id: string): Promise<Score> {
   const user_id = useAuthStore.getState().user?.id;

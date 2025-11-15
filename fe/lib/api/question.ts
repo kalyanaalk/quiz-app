@@ -1,6 +1,6 @@
 import { authFetch } from "./fetcher";
 
-const BASE = "http://localhost:8080";
+const BASE = "http://173.255.114.209:8080";
 
 export async function getQuestionsByQuiz(quiz_id: string) {
   const data = await authFetch(`${BASE}/questions/quiz/${quiz_id}`);
