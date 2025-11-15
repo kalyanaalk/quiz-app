@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"quiz-app/modules/score"
@@ -57,6 +58,8 @@ func (h *ScoreHandler) Submit(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println("anshandler: ", answers)
+
 	c.JSON(http.StatusOK, s)
 }
 

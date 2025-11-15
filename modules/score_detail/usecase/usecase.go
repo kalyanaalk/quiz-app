@@ -20,13 +20,11 @@ func (u *scoreDetailUsecase) SaveDetails(ctx context.Context, scoreID uuid.UUID,
 	var list []score_detail.ScoreDetail
 
 	for _, s := range submissions {
-		qID, _ := uuid.Parse(s.QuestionID)
 		for _, ans := range s.AnswerIDs {
 			aID, _ := uuid.Parse(ans)
 			list = append(list, score_detail.ScoreDetail{
-				ScoreID:    scoreID,
-				QuestionID: qID,
-				AnswerID:   &aID,
+				ScoreID:  scoreID,
+				AnswerID: &aID,
 			})
 		}
 	}

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"quiz-app/modules/answer"
@@ -40,7 +41,6 @@ func (uc *scoreUsecase) Start(ctx context.Context, userID, quizID uuid.UUID) (*s
 }
 
 func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers []score.AnswerSubmission) (*score.Score, error) {
-	// ambil score
 	s, err := uc.repo.GetByID(ctx, scoreID)
 	if err != nil {
 		return nil, err
@@ -49,17 +49,19 @@ func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers [
 		return nil, errors.New("score not found")
 	}
 
-	// ambil semua pertanyaan terkait quiz
 	questions, err := uc.qRepo.GetByQuizID(ctx, s.QuizID)
 	if err != nil {
 		return nil, err
 	}
 
-	// ubah answers slice jadi map[questionID] -> []answerID string
+	fmt.Println("questions: ", questions)
+
 	subMap := make(map[string][]string)
 	for _, sub := range answers {
 		subMap[sub.QuestionID] = sub.AnswerIDs
 	}
+
+	fmt.Println("answers: ", answers)
 
 	var details []score_detail.ScoreDetail
 
@@ -68,12 +70,10 @@ func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers [
 	var falseCount int
 
 	for _, q := range questions {
-		// ambil semua pilihan jawaban untuk question ini
 		answerList, err := uc.aRepo.GetByQuestionID(ctx, q.ID)
 		if err != nil {
 			return nil, err
 		}
-		// kumpulkan ID jawaban yang benar
 		correctIDsSet := map[uuid.UUID]struct{}{}
 		for _, a := range answerList {
 			if a.IsCorrect {
@@ -82,34 +82,25 @@ func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers [
 		}
 		totalCorrect := len(correctIDsSet)
 
-		// jawaban user untuk question ini (string uuid)
 		userAnswerStrs := subMap[q.ID.String()]
 
-		// jika user tidak mengirim jawaban untuk question ini -> buat ScoreDetail dengan AnswerID = nil
 		if len(userAnswerStrs) == 0 {
 			details = append(details, score_detail.ScoreDetail{
-				ScoreID:    scoreID,
-				QuestionID: q.ID,
-				AnswerID:   nil,
-				IsCorrect:  false,
+				ScoreID:   scoreID,
+				AnswerID:  nil,
+				IsCorrect: false,
 			})
-			// question considered incorrect
 			falseCount++
 			continue
 		}
 
-		// untuk menghitung earned score per question:
-		// hitung berapa banyak pilihan benar yang dipilih user (unique)
 		correctSelectedCount := 0
-		// track user selected ids to detect duplicates and extras
 		userSelectedSet := map[uuid.UUID]struct{}{}
 		for _, aStr := range userAnswerStrs {
 			aID, err := uuid.Parse(aStr)
 			if err != nil {
-				// skip invalid uuid answer id (treat as wrong)
 				continue
 			}
-			// prevent double counting duplicates
 			if _, ok := userSelectedSet[aID]; ok {
 				continue
 			}
@@ -119,17 +110,17 @@ func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers [
 			if isCorrect {
 				correctSelectedCount++
 			}
-			// buat detail per answer user (AnswerID non-nil)
 			tmpID := aID
 			details = append(details, score_detail.ScoreDetail{
-				ScoreID:    scoreID,
-				QuestionID: q.ID,
-				AnswerID:   &tmpID,
-				IsCorrect:  isCorrect,
+				ScoreID:   scoreID,
+				AnswerID:  &tmpID,
+				IsCorrect: isCorrect,
 			})
+
+			fmt.Println("tmpid: ", tmpID)
+
 		}
 
-		// earned fraction: correctSelectedCount / totalCorrect (jika totalCorrect == 0 => 0)
 		var earned float64
 		if totalCorrect > 0 {
 			earned = float64(correctSelectedCount) / float64(totalCorrect)
@@ -138,14 +129,12 @@ func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers [
 		}
 		totalScore += earned
 
-		// isQuestionCorrect: harus memilih semua correct AND tidak memilih pilihan incorrect (exact match)
 		isQuestionCorrect := false
 		if totalCorrect > 0 {
 			if correctSelectedCount == totalCorrect && len(userSelectedSet) == totalCorrect {
 				isQuestionCorrect = true
 			}
 		} else {
-			// no correct answers configured => treat as incorrect
 			isQuestionCorrect = false
 		}
 		if isQuestionCorrect {
@@ -155,14 +144,12 @@ func (uc *scoreUsecase) Submit(ctx context.Context, scoreID uuid.UUID, answers [
 		}
 	}
 
-	// simpan semua details (bulk)
 	if len(details) > 0 {
 		if err := uc.sdRepo.BulkInsert(ctx, details); err != nil {
 			return nil, err
 		}
 	}
 
-	// update score
 	s.FinishedAt = time.Now()
 	s.TotalScore = totalScore
 	s.CorrectCount = correctCount
