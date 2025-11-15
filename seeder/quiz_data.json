@@ -1,0 +1,52 @@
+[
+  {
+    "title": "Dasar Golang",
+    "description": "Kuis pengenalan bahasa Go",
+    "duration": 20,
+    "questions": [
+      {
+        "content": "Apa kegunaan keyword 'go' dalam Golang?",
+        "type": false,
+        "answers": [
+          { "content": "Menjalankan goroutine", "is_correct": true },
+          { "content": "Deklarasi variabel", "is_correct": false },
+          { "content": "Import package", "is_correct": false }
+        ]
+      },
+      {
+        "content": "Package apa yang digunakan untuk mencetak output?",
+        "type": false,
+        "answers": [
+          { "content": "fmt", "is_correct": true },
+          { "content": "io", "is_correct": false },
+          { "content": "os", "is_correct": false }
+        ]
+      }
+    ]
+  },
+
+  {
+    "title": "Dasar Python",
+    "description": "Kuis dasar pemrograman Python",
+    "duration": 25,
+    "questions": [
+      {
+        "content": "Tipe data apa yang digunakan untuk menyimpan teks?",
+        "type": false,
+        "answers": [
+          { "content": "str", "is_correct": true },
+          { "content": "text", "is_correct": false },
+          { "content": "char", "is_correct": false }
+        ]
+      },
+      {
+        "content": "Fungsi untuk menampilkan teks?",
+        "type": false,
+        "answers": [
+          { "content": "print()", "is_correct": true },
+          { "content": "echo()", "is_correct": false }
+        ]
+      }
+    ]
+  }
+]
